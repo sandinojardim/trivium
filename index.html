@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b3a55">
+<title>Artes Liberais</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f6f3ec; --card: #fffdf8; --ink: #2a2620; --quiet: #7a7265;
+    --line: #e2dccf; --accent: #2b3a55; --done: #5b7f5a; --soft: #ece6d8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1b1a17; --card: #24221e; --ink: #ece7dc; --quiet: #a59d8f;
+      --line: #3a372f; --accent: #9fb4dd; --done: #8fb58d; --soft: #2e2b25; }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.45 Georgia, "Times New Roman", serif;
+    padding: env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 24px); }
+  header { padding: 22px 18px 10px; }
+  h1 { font-size: 24px; margin: 0 0 2px; font-weight: normal; letter-spacing: .3px; }
+  .sub { color: var(--quiet); font-size: 14px; }
+  .bar { height: 6px; background: var(--soft); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+  .bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+  main { padding: 6px 12px; }
+  details.fase { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    margin: 10px 0; overflow: hidden; }
+  details.fase > summary { list-style: none; padding: 14px 16px; cursor: pointer; }
+  details.fase > summary::-webkit-details-marker { display: none; }
+  .fase-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .fase-nome { font-size: 17px; }
+  .fase-count { color: var(--quiet); font-size: 13px; font-family: system-ui, sans-serif; white-space: nowrap; }
+  .fase-meta { color: var(--quiet); font-size: 13px; margin-top: 2px; }
+  .fase.completa .fase-nome::after { content: " ✓"; color: var(--done); }
+  .grupo { padding: 0 16px 10px; }
+  .grupo h3 { font: 600 12px/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent); margin: 12px 0 4px; }
+  label.item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0;
+    border-top: 1px solid var(--line); cursor: pointer; }
+  .grupo h3 + label.item { border-top: none; }
+  label.item input { appearance: none; -webkit-appearance: none; flex: none; width: 22px; height: 22px;
+    margin: 1px 0 0; border: 1.5px solid var(--quiet); border-radius: 6px; display: grid; place-content: center; }
+  label.item input:checked { background: var(--done); border-color: var(--done); }
+  label.item input:checked::after { content: ""; width: 6px; height: 11px; border: solid #fff;
+    border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) translate(-1px, -1px); }
+  .txt { flex: 1; }
+  .txt em { font-style: italic; }
+  label.item.ok .txt { color: var(--quiet); }
+  .data { display: block; font: 12px system-ui, sans-serif; color: var(--done); margin-top: 2px; }
+  footer { padding: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+  button { font: 14px system-ui, sans-serif; padding: 10px 14px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  .nota { color: var(--quiet); font: 12px system-ui, sans-serif; padding: 0 18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Artes Liberais</h1>
+  <div class="sub" id="resumo"></div>
+  <div class="bar"><i id="barra"></i></div>
+</header>
+<main id="fases"></main>
+<footer>
+  <button id="exportar">Exportar backup</button>
+  <button id="importar">Importar backup</button>
+  <input type="file" id="arquivo" accept="application/json" hidden>
+</footer>
+<p class="nota">O progresso fica salvo neste aparelho. Exporte um backup de vez em quando.</p>
+
+<script>
+// Percurso. Os ids são fixos: não altere um id depois de usar o app, ou a marcação se perde.
+const PERCURSO = [
+  { id: 'f0', nome: 'Fase 0 — Orientação', meses: 'meses 1–2',
+    meta: 'Entender o que são as artes liberais e aprender a ler devagar.',
+    grupos: [
+      ['Leituras', [
+        ['f0-l1', 'Hugo de São Vítor, <em>Didascálicon</em>'],
+        ['f0-l2', 'Irmã Miriam Joseph, <em>O Trivium</em> (guia de apoio para todo o trivium)'],
+        ['f0-l3', 'Mortimer Adler e Charles Van Doren, <em>Como Ler Livros</em>']]],
+      ['Exercícios', [
+        ['f0-e1', 'Diário de leitura analítica: tese, estrutura e argumentos de cada capítulo']]],
+      ['Marco', [
+        ['f0-m1', 'Ensaio-âncora de cerca de 1.500 palavras sobre um tema à sua escolha'],
+        ['f0-m2', 'Resumo analítico de um texto curto'],
+        ['f0-m3', 'Retrospectiva de fim de fase']]]
+    ]},
+  { id: 'f1', nome: 'Fase 1 — Gramática e Aritmética', meses: 'meses 3–7',
+    meta: 'Precisão no uso da língua e no trato do número.',
+    grupos: [
+      ['Gramática', [
+        ['f1-g1', 'Napoleão Mendes de Almeida, <em>Gramática Metódica da Língua Portuguesa</em> (análise sintática)'],
+        ['f1-g2', 'Irmã Miriam Joseph, <em>O Trivium</em>: capítulos sobre termos e proposições'],
+        ['f1-g3', 'Opcional: latim com Hans Ørberg, <em>Lingua Latina per se Illustrata</em>']]],
+      ['Aritmética', [
+        ['f1-a1', 'Nicômaco de Gerasa, <em>Introdução à Aritmética</em>'],
+        ['f1-a2', 'Boécio, <em>De institutione arithmetica</em>, para comparar']]],
+      ['Exercícios', [
+        ['f1-e1', 'Análise sintática de períodos de Vieira'],
+        ['f1-e2', 'Traduções curtas do latim'],
+        ['f1-e3', 'Explicações escritas de propriedades numéricas, sem fórmulas']]],
+      ['Marco', [
+        ['f1-m1', 'Comentário de texto sobre um trecho de sermão de Vieira'],
+        ['f1-m2', 'Exposição de um tema aritmético para um leitor leigo'],
+        ['f1-m3', 'Retrospectiva de fim de fase']]]
+    ]},
+  { id: 'f2', nome: 'Fase 2 — Lógica e Geometria', meses: 'meses 8–13',
+    meta: 'Raciocinar com validade e demonstrar.',
+    grupos: [
+      ['Lógica', [
+        ['f2-l1', 'Porfírio, <em>Isagoge</em>'],
+        ['f2-l2', 'Aristóteles, <em>Categorias</em>'],
+        ['f2-l3', 'Aristóteles, <em>Da Interpretação</em>'],
+        ['f2-l4', 'Aristóteles, <em>Primeiros Analíticos</em>'],
+        ['f2-l5', 'Aristóteles, <em>Refutações Sofísticas</em>'],
+        ['f2-l6', 'Peter Kreeft, <em>Socratic Logic</em> (manual de exercícios)']]],
+      ['Geometria', [
+        ['f2-g1', 'Euclides, <em>Elementos</em>, livros I a VI'],
+        ['f2-g2', 'Opcional: Euclides, <em>Elementos</em>, livros VII a IX'],
+        ['f2-g3', 'Platão, <em>Mênon</em>, passagem do escravo']]],
+      ['Exercícios', [
+        ['f2-e1', 'Reduzir argumentos de artigos e editoriais a silogismos e apontar falácias'],
+        ['f2-e2', 'Refazer demonstrações de Euclides com régua e compasso, sem consultar o texto']]],
+      ['Marco', [
+        ['f2-m1', 'Análise lógica do próprio ensaio-âncora e reescrita'],
+        ['f2-m2', 'Demonstração escrita de uma proposição central, como a I.47 (teorema de Pitágoras)'],
+        ['f2-m3', 'Retrospectiva de fim de fase']]]
+    ]},
+  { id: 'f3', nome: 'Fase 3 — Retórica e Música', meses: 'meses 14–19',
+    meta: 'Persuadir com ordem e entender a harmonia como proporção.',
+    grupos: [
+      ['Retórica', [
+        ['f3-r1', 'Aristóteles, <em>Retórica</em>'],
+        ['f3-r2', 'Cícero, <em>Do Orador</em>'],
+        ['f3-r3', 'Quintiliano, <em>Instituição Oratória</em> (livros selecionados, sobretudo o X)'],
+        ['f3-r4', 'Santo Agostinho, <em>A Doutrina Cristã</em>, livro IV'],
+        ['f3-r5', 'Vieira, <em>Sermão da Sexagésima</em>']]],
+      ['Música', [
+        ['f3-u1', 'Boécio, <em>De institutione musica</em>, livro I'],
+        ['f3-u2', 'Teoria básica de intervalos e escalas'],
+        ['f3-u3', 'Experimentos com um monocórdio, real ou simulado']]],
+      ['Exercícios', [
+        ['f3-e1', 'Imitação: escrever um texto seguindo a estrutura de um modelo'],
+        ['f3-e2', 'Discursos nos três gêneros: deliberativo, judicial e epidíctico'],
+        ['f3-e3', 'Calcular intervalos como razões e reconhecê-los de ouvido']]],
+      ['Marco', [
+        ['f3-m1', 'Discurso deliberativo gravado, de cerca de 10 minutos, sobre uma questão real'],
+        ['f3-m2', 'Ensaio sobre por que as consonâncias correspondem a razões simples'],
+        ['f3-m3', 'Retrospectiva de fim de fase']]]
+    ]},
+  { id: 'f4', nome: 'Fase 4 — Astronomia e síntese', meses: 'meses 20–24',
+    meta: 'Explicar o céu com modelos e unir as artes.',
+    grupos: [
+      ['Astronomia', [
+        ['f4-a1', 'Ptolomeu, <em>Almagesto</em>, livro I'],
+        ['f4-a2', 'Copérnico, <em>Das Revoluções</em>, prefácio e livro I'],
+        ['f4-a3', 'Galileu, <em>O Mensageiro das Estrelas</em>'],
+        ['f4-a4', 'Thomas Kuhn, <em>A Revolução Copernicana</em> (guia)'],
+        ['f4-a5', 'Observação a olho nu e com o Stellarium, registrando o movimento da Lua e dos planetas']]],
+      ['Síntese', [
+        ['f4-s1', 'Platão, <em>Timeu</em>'],
+        ['f4-s2', 'Boécio, <em>A Consolação da Filosofia</em>']]],
+      ['Marco final', [
+        ['f4-m1', 'Reescrita do ensaio-âncora e comparação com a versão da Fase 0'],
+        ['f4-m2', '<em>Disputatio</em> com a IA em defesa de uma tese própria'],
+        ['f4-m3', 'Retrospectiva final do percurso']]]
+    ]}
+];
+
+const CHAVE = 'artes-liberais-v1';
+let estado = carregar();
+
+function carregar() {
+  try { return JSON.parse(localStorage.getItem(CHAVE)) || { feitos: {} }; }
+  catch (e) { return { feitos: {} }; }
+}
+function salvar() {
+  try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) {}
+}
+function hoje() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function fmt(iso) { const [a, m, d] = iso.split('-'); return `${d}/${m}/${a}`; }
+const itensDe = f => f.grupos.flatMap(g => g[1]);
+
+function render() {
+  const abertas = new Set([...document.querySelectorAll('details.fase[open]')].map(d => d.dataset.id));
+  const primeiraRender = !document.querySelector('details.fase');
+  const total = PERCURSO.flatMap(itensDe).length;
+  const feitos = PERCURSO.flatMap(itensDe).filter(([id]) => estado.feitos[id]).length;
+  document.getElementById('resumo').textContent = `${feitos} de ${total} etapas concluídas`;
+  document.getElementById('barra').style.width = `${(feitos / total) * 100}%`;
+
+  // A fase atual é a primeira que ainda tem etapas em aberto.
+  const atual = PERCURSO.find(f => itensDe(f).some(([id]) => !estado.feitos[id]));
+
+  const main = document.getElementById('fases');
+  main.innerHTML = '';
+  for (const f of PERCURSO) {
+    const itens = itensDe(f);
+    const n = itens.filter(([id]) => estado.feitos[id]).length;
+    const det = document.createElement('details');
+    det.className = 'fase' + (n === itens.length ? ' completa' : '');
+    det.dataset.id = f.id;
+    det.open = primeiraRender ? f === atual : abertas.has(f.id);
+    let html = `<summary><div class="fase-top"><span class="fase-nome">${f.nome}</span>
+      <span class="fase-count">${n}/${itens.length}</span></div>
+      <div class="fase-meta">${f.meses} · ${f.meta}</div></summary>`;
+    for (const [titulo, lista] of f.grupos) {
+      html += `<div class="grupo"><h3>${titulo}</h3>`;
+      for (const [id, texto] of lista) {
+        const d = estado.feitos[id];
+        html += `<label class="item${d ? ' ok' : ''}"><input type="checkbox" data-id="${id}"${d ? ' checked' : ''}>
+          <span class="txt">${texto}${d ? `<span class="data">concluído em ${fmt(d)}</span>` : ''}</span></label>`;
+      }
+      html += '</div>';
+    }
+    det.innerHTML = html;
+    main.appendChild(det);
+  }
+}
+
+document.getElementById('fases').addEventListener('change', e => {
+  const id = e.target.dataset.id;
+  if (!id) return;
+  if (e.target.checked) estado.feitos[id] = hoje();
+  else delete estado.feitos[id];
+  salvar();
+  render();
+});
+
+document.getElementById('exportar').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(estado, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `artes-liberais-backup-${hoje()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+document.getElementById('importar').addEventListener('click', () => document.getElementById('arquivo').click());
+document.getElementById('arquivo').addEventListener('change', async e => {
+  const arq = e.target.files[0];
+  if (!arq) return;
+  try {
+    const dados = JSON.parse(await arq.text());
+    if (!dados || typeof dados.feitos !== 'object') throw new Error();
+    estado = dados; salvar(); render();
+  } catch (err) {
+    document.getElementById('resumo').textContent = 'Arquivo de backup inválido.';
+  }
+  e.target.value = '';
+});
+
+render();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
