@@ -39,9 +39,18 @@
   .grupo { padding: 0 16px 10px; }
   .grupo h3 { font: 600 12px/1 system-ui, sans-serif; text-transform: uppercase; letter-spacing: 1px;
     color: var(--accent); margin: 12px 0 4px; }
-  label.item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0;
-    border-top: 1px solid var(--line); cursor: pointer; }
-  .grupo h3 + label.item { border-top: none; }
+  .item-wrap { border-top: 1px solid var(--line); }
+  .grupo h3 + .item-wrap { border-top: none; }
+  label.item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; cursor: pointer; }
+  details.prompt { margin: -4px 0 10px 34px; }
+  details.prompt > summary { font: 13px system-ui, sans-serif; color: var(--accent); cursor: pointer;
+    list-style: none; padding: 2px 0; }
+  details.prompt > summary::-webkit-details-marker { display: none; }
+  details.prompt > summary::before { content: "▸ "; }
+  details.prompt[open] > summary::before { content: "▾ "; }
+  .dica { font: 12px system-ui, sans-serif; color: var(--quiet); margin: 6px 0; }
+  .ptexto { white-space: pre-wrap; font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace;
+    background: var(--soft); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
   label.item input { appearance: none; -webkit-appearance: none; flex: none; width: 22px; height: 22px;
     margin: 1px 0 0; border: 1.5px solid var(--quiet); border-radius: 6px; display: grid; place-content: center; }
   label.item input:checked { background: var(--done); border-color: var(--done); }
@@ -82,7 +91,7 @@ const PERCURSO = [
         ['f0-l2', 'Irmã Miriam Joseph, <em>O Trivium</em> (guia de apoio para todo o trivium)'],
         ['f0-l3', 'Mortimer Adler e Charles Van Doren, <em>Como Ler Livros</em>']]],
       ['Exercícios', [
-        ['f0-e1', 'Diário de leitura analítica: tese, estrutura e argumentos de cada capítulo']]],
+        ['f0-e1', 'Diário de leitura analítica: tese, estrutura e argumentos de cada capítulo', "Atue como tutor de leitura analítica, no método de Mortimer Adler em \"Como Ler Livros\". Estou lendo [LIVRO], [CAPÍTULO OU TRECHO].\n\nMonte um exercício de leitura analítica sobre esse trecho, pedindo que eu:\n1. Diga de que tipo de texto se trata e enuncie a sua unidade em uma ou duas frases.\n2. Enumere as partes principais e mostre como se ordenam.\n3. Identifique os termos-chave e o sentido em que o autor os usa.\n4. Enuncie as proposições principais e reconstrua os argumentos que as sustentam.\n\nNão responda por mim. Quando eu enviar minhas respostas, avalie cada item, aponte o que deixei passar ou interpretei mal e indique onde o texto mostra isso. Não dê nota."]]],
       ['Marco', [
         ['f0-m1', 'Ensaio-âncora de cerca de 1.500 palavras sobre um tema à sua escolha'],
         ['f0-m2', 'Resumo analítico de um texto curto'],
@@ -99,9 +108,9 @@ const PERCURSO = [
         ['f1-a1', 'Nicômaco de Gerasa, <em>Introdução à Aritmética</em>'],
         ['f1-a2', 'Boécio, <em>De institutione arithmetica</em>, para comparar']]],
       ['Exercícios', [
-        ['f1-e1', 'Análise sintática de períodos de Vieira'],
-        ['f1-e2', 'Traduções curtas do latim'],
-        ['f1-e3', 'Explicações escritas de propriedades numéricas, sem fórmulas']]],
+        ['f1-e1', 'Análise sintática de períodos de Vieira', "Atue como professor de gramática portuguesa, usando a Nomenclatura Gramatical Brasileira, como na \"Gramática Metódica\" de Napoleão Mendes de Almeida.\n\nTrecho do Padre Antônio Vieira:\n[COLE AQUI O TRECHO]\n\nEscolha nesse trecho 5 períodos, do mais simples ao mais complexo. Para cada um, peça que eu:\n1. Classifique o período (simples ou composto; coordenação, subordinação ou ambos).\n2. Separe e classifique as orações.\n3. Identifique os termos da oração principal: sujeito, predicado, complementos e adjuntos.\n\nNão mostre as respostas. Quando eu enviar a minha análise, corrija item por item e explique cada erro."],
+        ['f1-e2', 'Traduções curtas do latim', "Atue como professor de latim pelo método natural de Hans Ørberg. Estou no capítulo [NÚMERO] de \"Lingua Latina per se Illustrata: Familia Romana\".\n\nUsando só o vocabulário e a gramática vistos até esse capítulo:\n1. Escreva 8 frases curtas em latim, em dificuldade crescente, para eu traduzir.\n2. Escreva 4 frases em português para eu verter ao latim.\n\nNão mostre as traduções. Quando eu responder, corrija cada frase e explique os erros de caso, concordância, tempo verbal e escolha de palavras."],
+        ['f1-e3', 'Explicações escritas de propriedades numéricas, sem fórmulas', "Atue como professor de aritmética no sentido clássico, a partir da \"Introdução à Aritmética\" de Nicômaco de Gerasa. Estou estudando [TEMA, ex.: números perfeitos, abundantes e deficientes; razões sesquiálteras; números figurados].\n\nProponha 3 exercícios em que eu explique por escrito, sem fórmulas nem notação algébrica, uma propriedade desse tema a um leitor leigo, com exemplos concretos.\n\nNão responda por mim. Quando eu enviar, avalie se a explicação está correta, se é clara para um leigo e se se sustenta sem fórmulas. Não dê nota."]]],
       ['Marco', [
         ['f1-m1', 'Comentário de texto sobre um trecho de sermão de Vieira'],
         ['f1-m2', 'Exposição de um tema aritmético para um leitor leigo'],
@@ -122,8 +131,8 @@ const PERCURSO = [
         ['f2-g2', 'Opcional: Euclides, <em>Elementos</em>, livros VII a IX'],
         ['f2-g3', 'Platão, <em>Mênon</em>, passagem do escravo']]],
       ['Exercícios', [
-        ['f2-e1', 'Reduzir argumentos de artigos e editoriais a silogismos e apontar falácias'],
-        ['f2-e2', 'Refazer demonstrações de Euclides com régua e compasso, sem consultar o texto']]],
+        ['f2-e1', 'Reduzir argumentos de artigos e editoriais a silogismos e apontar falácias', "Atue como professor de lógica aristotélica.\n\nTexto para análise:\n[COLE AQUI O ARTIGO OU EDITORIAL]\n\nPeça que eu:\n1. Identifique a tese principal do texto.\n2. Reduza os argumentos centrais a silogismos categóricos (premissa maior, premissa menor e conclusão), explicitando as premissas implícitas.\n3. Indique a figura e o modo de cada silogismo e diga se é válido.\n4. Aponte as falácias e classifique-as segundo as \"Refutações Sofísticas\".\n\nNão faça a análise por mim. Quando eu responder, corrija cada item e mostre o que deixei passar."],
+        ['f2-e2', 'Refazer demonstrações de Euclides com régua e compasso, sem consultar o texto', "Atue como professor de geometria euclidiana. Estou estudando o livro [NÚMERO] dos \"Elementos\" de Euclides.\n\nEscolha 3 proposições desse livro, de dificuldade crescente, e escreva só o enunciado de cada uma, sem a demonstração. Para cada uma, peça que eu:\n1. Faça a construção com régua e compasso.\n2. Escreva a demonstração em prosa, citando as definições, postulados, noções comuns e proposições anteriores que usar.\n\nQuando eu enviar, compare com a demonstração de Euclides e aponte passos sem justificativa e erros de ordem lógica."]]],
       ['Marco', [
         ['f2-m1', 'Análise lógica do próprio ensaio-âncora e reescrita'],
         ['f2-m2', 'Demonstração escrita de uma proposição central, como a I.47 (teorema de Pitágoras)'],
@@ -143,9 +152,9 @@ const PERCURSO = [
         ['f3-u2', 'Teoria básica de intervalos e escalas'],
         ['f3-u3', 'Experimentos com um monocórdio, real ou simulado']]],
       ['Exercícios', [
-        ['f3-e1', 'Imitação: escrever um texto seguindo a estrutura de um modelo'],
-        ['f3-e2', 'Discursos nos três gêneros: deliberativo, judicial e epidíctico'],
-        ['f3-e3', 'Calcular intervalos como razões e reconhecê-los de ouvido']]],
+        ['f3-e1', 'Imitação: escrever um texto seguindo a estrutura de um modelo', "Atue como professor de retórica, seguindo o método de imitação descrito por Quintiliano no livro X da \"Instituição Oratória\".\n\nTexto-modelo:\n[COLE AQUI O TEXTO-MODELO]\n\n1. Peça primeiro que eu descreva a estrutura do modelo: as partes do discurso, a ordem dos argumentos e as figuras principais. Corrija a minha descrição.\n2. Depois proponha um tema diferente, de natureza semelhante, para eu escrever um texto que imite essa estrutura e esse estilo, sem copiar frases.\n\nQuando eu enviar o meu texto, compare-o com o modelo parte por parte e diga onde a imitação funcionou e onde se afastou dele."],
+        ['f3-e2', 'Discursos nos três gêneros: deliberativo, judicial e epidíctico', "Atue como professor de retórica clássica, com base em Aristóteles e Cícero.\n\nProponha três situações concretas e atuais, uma para cada gênero:\n1. Deliberativo: aconselhar um auditório sobre uma decisão futura.\n2. Judicial: acusar ou defender alguém a respeito de um fato passado.\n3. Epidíctico: louvar ou censurar uma pessoa, instituição ou ato.\n\nPara cada situação, indique o auditório, o objetivo e a extensão do discurso (minutos de fala ou número de palavras).\n\nQuando eu enviar cada discurso, avalie: a invenção (provas pelo ethos, pelo pathos e pelo logos), a disposição (exórdio, narração, confirmação, refutação e peroração), a elocução e a adequação ao auditório. Não dê nota."],
+        ['f3-e3', 'Calcular intervalos como razões e reconhecê-los de ouvido', "Atue como professor de música especulativa, na linha do \"De institutione musica\" de Boécio.\n\nCrie 8 exercícios de dificuldade crescente sobre intervalos como razões numéricas, incluindo:\n- calcular a razão de um intervalo a partir de comprimentos de corda num monocórdio;\n- somar e subtrair intervalos multiplicando e dividindo razões;\n- mostrar por que seis tons inteiros excedem a oitava (a coma pitagórica);\n- relacionar razões e nomes de intervalos (oitava 2:1, quinta 3:2, quarta 4:3, tom 9:8).\n\nNão mostre as respostas. No fim, sugira 3 intervalos para eu tentar reconhecer de ouvido num teclado ou aplicativo.\n\nQuando eu responder, corrija mostrando o cálculo."]]],
       ['Marco', [
         ['f3-m1', 'Discurso deliberativo gravado, de cerca de 10 minutos, sobre uma questão real'],
         ['f3-m2', 'Ensaio sobre por que as consonâncias correspondem a razões simples'],
@@ -186,9 +195,25 @@ function hoje() {
 }
 function fmt(iso) { const [a, m, d] = iso.split('-'); return `${d}/${m}/${a}`; }
 const itensDe = f => f.grupos.flatMap(g => g[1]);
+const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const promptDe = id => PERCURSO.flatMap(itensDe).find(i => i[0] === id)[2];
+
+async function copiar(id, botao) {
+  const texto = promptDe(id);
+  try { await navigator.clipboard.writeText(texto); }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = texto; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e2) {}
+    ta.remove();
+  }
+  botao.textContent = 'Copiado ✓';
+  setTimeout(() => { botao.textContent = 'Copiar prompt'; }, 1800);
+}
 
 function render() {
   const abertas = new Set([...document.querySelectorAll('details.fase[open]')].map(d => d.dataset.id));
+  const promptsAbertos = new Set([...document.querySelectorAll('details.prompt[open]')].map(d => d.dataset.pid));
   const primeiraRender = !document.querySelector('details.fase');
   const total = PERCURSO.flatMap(itensDe).length;
   const feitos = PERCURSO.flatMap(itensDe).filter(([id]) => estado.feitos[id]).length;
@@ -212,10 +237,18 @@ function render() {
       <div class="fase-meta">${f.meses} · ${f.meta}</div></summary>`;
     for (const [titulo, lista] of f.grupos) {
       html += `<div class="grupo"><h3>${titulo}</h3>`;
-      for (const [id, texto] of lista) {
+      for (const [id, texto, prompt] of lista) {
         const d = estado.feitos[id];
-        html += `<label class="item${d ? ' ok' : ''}"><input type="checkbox" data-id="${id}"${d ? ' checked' : ''}>
+        html += `<div class="item-wrap"><label class="item${d ? ' ok' : ''}"><input type="checkbox" data-id="${id}"${d ? ' checked' : ''}>
           <span class="txt">${texto}${d ? `<span class="data">concluído em ${fmt(d)}</span>` : ''}</span></label>`;
+        if (prompt) {
+          html += `<details class="prompt" data-pid="${id}"${promptsAbertos.has(id) ? ' open' : ''}>
+            <summary>Prompt para a LLM</summary>
+            <p class="dica">Substitua o que estiver entre [colchetes] antes de enviar.</p>
+            <div class="ptexto">${esc(prompt)}</div>
+            <button type="button" data-copiar="${id}">Copiar prompt</button></details>`;
+        }
+        html += '</div>';
       }
       html += '</div>';
     }
@@ -231,6 +264,11 @@ document.getElementById('fases').addEventListener('change', e => {
   else delete estado.feitos[id];
   salvar();
   render();
+});
+
+document.getElementById('fases').addEventListener('click', e => {
+  const id = e.target.dataset && e.target.dataset.copiar;
+  if (id) copiar(id, e.target);
 });
 
 document.getElementById('exportar').addEventListener('click', () => {

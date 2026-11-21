@@ -1,5 +1,5 @@
 // Ao atualizar o app, mude a versão abaixo para o celular baixar os arquivos novos.
-const VERSAO = 'artes-liberais-v1';
+const VERSAO = 'artes-liberais-v2';
 const ARQUIVOS = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
